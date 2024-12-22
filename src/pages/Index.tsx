@@ -50,49 +50,69 @@ const Index = () => {
 
       let response;
       if (provider === 'gemini') {
-        // Call Gemini API
+        const geminiBody = {
+          contents: [{
+            parts: [{
+              text: content
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          },
+          safetySettings: []
+        };
+
         response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${apiKey}`
           },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: content }] }]
-          })
+          body: JSON.stringify(geminiBody)
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error?.message || 'Failed to get response from Gemini');
+        }
+
+        const data = await response.json();
+        const assistantMessage = {
+          role: 'assistant',
+          content: data.candidates[0].content.parts[0].text
+        };
+
+        const updatedMessages = [...newMessages, assistantMessage];
+        setMessages(updatedMessages);
+        addChat(updatedMessages);
       } else {
         // Call GPT API (using your existing implementation)
         // Simulate API delay for now
         await new Promise(resolve => setTimeout(resolve, 1000));
         response = { ok: true };
-      }
 
-      if (!response.ok) {
-        throw new Error('Failed to get response from AI');
-      }
+        if (!response.ok) {
+          throw new Error('Failed to get response from AI');
+        }
 
-      let assistantMessage: Message;
-      if (provider === 'gemini') {
-        const data = await response.json();
-        assistantMessage = {
-          role: 'assistant',
-          content: data.candidates[0].content.parts[0].text
-        };
-      } else {
+        let assistantMessage: Message;
         assistantMessage = {
           role: 'assistant',
           content: "I am a hardcoded response. The database connection has been removed for testing purposes. You can modify this response in the Index.tsx file."
         };
-      }
 
-      const updatedMessages = [...newMessages, assistantMessage];
-      setMessages(updatedMessages);
-      addChat(updatedMessages);
+        const updatedMessages = [...newMessages, assistantMessage];
+        setMessages(updatedMessages);
+        addChat(updatedMessages);
+      }
     } catch (error: any) {
+      console.error('API Error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to get response",
         variant: "destructive"
       });
     } finally {
