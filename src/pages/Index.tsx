@@ -12,7 +12,7 @@ type Message = {
   content: string;
 };
 
-const DEFAULT_GEMINI_KEY = "YOUR-KEY-HERE"; // Replace with your key
+const DEFAULT_GEMINI_KEY = "AIzaSyDtzSfarxfOhR2jTV0riLkK9_JjhyWkARA";
 
 const Index = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
