@@ -5,6 +5,7 @@ import ChatHeader from '@/components/ChatHeader';
 import ChatInput from '@/components/ChatInput';
 import ActionButtons from '@/components/ActionButtons';
 import MessageList from '@/components/MessageList';
+import { useChatStore } from '@/hooks/useChatStore';
 
 type Message = {
   role: 'user' | 'assistant';
@@ -16,6 +17,7 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { apiKey, addChat } = useChatStore();
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) {
@@ -45,7 +47,9 @@ const Index = () => {
         content: "I am a hardcoded response. The database connection has been removed for testing purposes. You can modify this response in the Index.tsx file."
       };
 
-      setMessages([...newMessages, assistantMessage]);
+      const updatedMessages = [...newMessages, assistantMessage];
+      setMessages(updatedMessages);
+      addChat(updatedMessages);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -62,7 +66,7 @@ const Index = () => {
       <Sidebar 
         isOpen={isSidebarOpen} 
         onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        onApiKeyChange={() => {}} // Empty function since we don't need API key anymore
+        onApiKeyChange={(key) => useChatStore.getState().setApiKey(key)}
       />
       
       <main className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}>
