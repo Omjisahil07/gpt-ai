@@ -12,6 +12,8 @@ type Message = {
   content: string;
 };
 
+const DEFAULT_GEMINI_KEY = "YOUR-KEY-HERE"; // Replace with your key
+
 const Index = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -65,11 +67,13 @@ const Index = () => {
           safetySettings: []
         };
 
+        const activeKey = apiKey || DEFAULT_GEMINI_KEY;
+
         response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${apiKey}`
+            'Authorization': `Bearer ${activeKey}`
           },
           body: JSON.stringify(geminiBody)
         });
@@ -80,7 +84,7 @@ const Index = () => {
         }
 
         const data = await response.json();
-        const assistantMessage = {
+        const assistantMessage: Message = {
           role: 'assistant',
           content: data.candidates[0].content.parts[0].text
         };
