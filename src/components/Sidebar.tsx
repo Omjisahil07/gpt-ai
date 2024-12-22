@@ -2,6 +2,9 @@ import { Menu, Globe, ChevronDown, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useChatStore } from "@/hooks/useChatStore";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,6 +14,8 @@ interface SidebarProps {
 
 const Sidebar = ({ isOpen, onToggle, onApiKeyChange }: SidebarProps) => {
   const [apiKey, setApiKey] = useState("");
+  const { provider, setProvider } = useChatStore();
+  
   const timeframes = [
     { title: "Yesterday", items: ["Using Tailwind CSS Guide"] },
     { 
@@ -59,19 +64,38 @@ const Sidebar = ({ isOpen, onToggle, onApiKeyChange }: SidebarProps) => {
 
         <div className="flex-col flex-1 transition-opacity duration-500 relative -mr-2 pr-2 overflow-y-auto">
           {isOpen && (
-            <div className="p-2 mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Key className="h-4 w-4" />
-                <span className="text-sm">API Key</span>
+            <>
+              <div className="p-2 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <Key className="h-4 w-4" />
+                  <span className="text-sm">API Key</span>
+                </div>
+                <Input
+                  type="password"
+                  placeholder="Enter your API key"
+                  value={apiKey}
+                  onChange={handleApiKeyChange}
+                  className="bg-[#2F2F2F] border-none"
+                />
               </div>
-              <Input
-                type="password"
-                placeholder="Enter your API key"
-                value={apiKey}
-                onChange={handleApiKeyChange}
-                className="bg-[#2F2F2F] border-none"
-              />
-            </div>
+
+              <div className="p-2 mb-4">
+                <RadioGroup
+                  value={provider}
+                  onValueChange={(value) => setProvider(value as 'gpt' | 'gemini')}
+                  className="flex flex-col space-y-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="gpt" id="gpt" />
+                    <Label htmlFor="gpt">GPT</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="gemini" id="gemini" />
+                    <Label htmlFor="gemini">Gemini</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            </>
           )}
 
           <div className="bg-token-sidebar-surface-primary pt-0">

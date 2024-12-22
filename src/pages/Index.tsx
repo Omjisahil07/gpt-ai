@@ -17,13 +17,22 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { apiKey, addChat } = useChatStore();
+  const { apiKey, provider, addChat } = useChatStore();
 
   const handleSendMessage = async (content: string) => {
     if (!content.trim()) {
       toast({
         title: "Error",
         description: "Please enter a message",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!apiKey) {
+      toast({
+        title: "Error",
+        description: "Please enter an API key",
         variant: "destructive"
       });
       return;
@@ -39,13 +48,43 @@ const Index = () => {
       
       setMessages(newMessages);
 
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let response;
+      if (provider === 'gemini') {
+        // Call Gemini API
+        response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: content }] }]
+          })
+        });
+      } else {
+        // Call GPT API (using your existing implementation)
+        // Simulate API delay for now
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        response = { ok: true };
+      }
 
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: "I am a hardcoded response. The database connection has been removed for testing purposes. You can modify this response in the Index.tsx file."
-      };
+      if (!response.ok) {
+        throw new Error('Failed to get response from AI');
+      }
+
+      let assistantMessage: Message;
+      if (provider === 'gemini') {
+        const data = await response.json();
+        assistantMessage = {
+          role: 'assistant',
+          content: data.candidates[0].content.parts[0].text
+        };
+      } else {
+        assistantMessage = {
+          role: 'assistant',
+          content: "I am a hardcoded response. The database connection has been removed for testing purposes. You can modify this response in the Index.tsx file."
+        };
+      }
 
       const updatedMessages = [...newMessages, assistantMessage];
       setMessages(updatedMessages);
@@ -88,7 +127,7 @@ const Index = () => {
                 <ChatInput onSend={handleSendMessage} isLoading={isLoading} />
               </div>
               <div className="text-xs text-center text-gray-500 py-2">
-                ChatGPT can make mistakes. Check important info.
+                AI can make mistakes. Check important info.
               </div>
             </>
           )}

@@ -8,7 +8,9 @@ interface Message {
 
 interface ChatStore {
   apiKey: string;
+  provider: 'gpt' | 'gemini';
   setApiKey: (key: string) => void;
+  setProvider: (provider: 'gpt' | 'gemini') => void;
   chatHistory: { id: string; messages: Message[] }[];
   addChat: (messages: Message[]) => void;
   deleteChat: (id: string) => void;
@@ -18,7 +20,9 @@ export const useChatStore = create<ChatStore>()(
   persist(
     (set) => ({
       apiKey: '',
+      provider: 'gpt',
       setApiKey: (key) => set({ apiKey: key }),
+      setProvider: (provider) => set({ provider }),
       chatHistory: [],
       addChat: (messages) => 
         set((state) => ({
